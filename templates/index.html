@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .input-box {
+            width: 48%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        p {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>API Example</h1>
+
+    <div class="input-container">
+        <input id="countryInput" class="input-box" placeholder="País (ej: 1,0,0,0,0,0,...)">
+        <input id="priceInput" class="input-box" placeholder="Precio por unidad">
+    </div>
+
+    <button onclick="predict()">Hacer Predicción</button>
+
+    <p id="predictionResult"></p>
+
+    <script>
+        function parseInput(input1, input2) {
+            var countryString = input1.trim();
+            var country = countryString.split(',').map(Number);  // Convertir la cadena de números en una lista de números
+            var price = parseFloat(input2.trim());
+
+            if (isNaN(price)) {
+                price = 0; // Manejar el caso en que el precio no sea un número válido
+            }
+
+            return country.concat(price);
+        }
+
+        function predict() {
+            var countryInput = document.getElementById('countryInput').value;
+            var priceInput = document.getElementById('priceInput').value;
+
+            var userSequence = parseInput(countryInput, priceInput);
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'user_sequence': userSequence })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if ('prediction' in data) {
+                    document.getElementById('predictionResult').innerHTML = 'Predicción: ' + data.prediction;
+                } else {
+                    document.getElementById('predictionResult').innerHTML = 'Error en la predicción';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('predictionResult').innerHTML = 'Error en la predicción';
+            });
+        }
+    </script>
+
+</body>
+</html>
